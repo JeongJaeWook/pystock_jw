@@ -1,0 +1,22 @@
+키움증권
+jjw111
+game9175
+
+시작할 때
+activate py37_32
+
+계좌
+8138795411
+
+현재 공부할 차례
+46강
+~45강 - 2020 06 27
+i
+ssh-keygen -t rsa -C "jaewook111@naver.com"
+
+출처: https://zeddios.tistory.com/120 [ZeddiOS]
+
+cat C:\Users\jaewook/.ssh/id_rsa.pub.
+WQ2LpCE2AYhnEjpLoPchAWSdqCTeKUtdBBkLEQzA960
+
+SHA256:WQ2LpCE2AYhnEjpLoPchAWSdqCTeKUtdBBkLEQzA960 jaewook111@naver.com
