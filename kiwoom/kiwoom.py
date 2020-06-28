@@ -73,7 +73,7 @@ class Kiwoom(QAxWidget):
         self.login_event_Loop.exit()
 
     def get_accout_info(self):
-        account_list = self.dynamicCall("GetLogininfo(String)", "ACCNO")
+        account_list = self.dynamicCall("GetLogininfo(QString)", "ACCNO")
         self.account_num = account_list.split(';')[0]
         print("나의 보유 계좌번호 %s" % self.account_num)  # 8138795411
 
