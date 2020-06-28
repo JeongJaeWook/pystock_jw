@@ -22,7 +22,7 @@ class Kiwoom(QAxWidget):
         self.account_num = None
         ##################
 
-        #1일차 + 2일차
+        #2일차
         self.get_ocx_instance()
         self.event_slots()
         self.signal_login_commConect()
