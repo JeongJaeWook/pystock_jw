@@ -1,6 +1,7 @@
 from PyQt5.QAxContainer import *
 from PyQt5.QtCore import *
 from config.errorCode import *
+from PyQt5.QtTest import *
 
 
 class Kiwoom(QAxWidget):
@@ -15,17 +16,11 @@ class Kiwoom(QAxWidget):
         ###eventloop 모음
         self.login_event_Loop = QEventLoop()
         self.detail_account_info_event_loop = QEventLoop()
-        #self.detail_account_info_event_loop2 = None
-
-        #다시 할당하는게 아니라, 기존꺼를 다시 해야하기 때문에 이렇게 해ㅐ야 한다.
-        #중복 경고는 무시해도 댐
-        #self.detail_account_info_event_loop2 = QEventLoop()
-        ##################
+        self.calculator_event_loop = QEventLoop()
 
         ###스크린 번호 모음
         self.screen_my_info = "2000"
-
-
+        self.screen_calculation_stock = "4000"
         ###############
 
         ###변수 모음
@@ -44,7 +39,7 @@ class Kiwoom(QAxWidget):
         #2일차
         self.get_ocx_instance()
         self.event_slots()
-        self.signal_login_commConect()
+        self.signal_login_CommConnect()
         self.get_accout_info()
 
         #3일차
@@ -56,6 +51,8 @@ class Kiwoom(QAxWidget):
         #5일차
         self.not_concluded_account()
 
+        self.calculator_fnc()  # 종목 분석용, 임시용으로 실행
+
     def get_ocx_instance(self):
         self.setControl("KHOPENAPI.KHOpenAPICtrl.1")  # 응용 프로그램 제어 가능
 
@@ -63,7 +60,7 @@ class Kiwoom(QAxWidget):
         self.OnEventConnect.connect(self.login_slot)  # 내가 임의로 만든 slot에다가 결과값을 던져줄것이다.
         self.OnReceiveTrData.connect(self.trdata_slot)  # 실시간 값 받아오기
 
-    def signal_login_commConect(self):
+    def signal_login_CommConnect(self):
         self.dynamicCall("CommConnect()")
         #self.login_event_Loop = QEventLoop()
         self.login_event_Loop.exec_()
@@ -80,10 +77,10 @@ class Kiwoom(QAxWidget):
     def detail_account_info(self):
         print("예수금 요청하는 부분")
 
-        self.dynamicCall("SetInputValue(QString, QString)", "계좌번호", self.account_num);
-        self.dynamicCall("SetInputValue(QString, QString)", "비밀번호", "0000");
-        self.dynamicCall("SetInputValue(QString, QString)", "비밀번호입력매체구분", "00");
-        self.dynamicCall("SetInputValue(QString, QString)", "조회구분", "2");
+        self.dynamicCall("SetInputValue(QString, QString)", "계좌번호", self.account_num)
+        self.dynamicCall("SetInputValue(QString, QString)", "비밀번호", "0000")
+        self.dynamicCall("SetInputValue(QString, QString)", "비밀번호입력매체구분", "00")
+        self.dynamicCall("SetInputValue(QString, QString)", "조회구분", "2")
         self.dynamicCall("CommRqData(QString,  QString, int,  QString) ", "예수금상세현황요청", "opw00001", "0", self.screen_my_info)
 
         # 스크린 번호 : 하나의 그룹을 만들어 준다. TR요청 할 때마다 스크린 번호를 기입을 해 줄 건데, 같은 번호끼리 모인다(200개까지가능)
@@ -171,39 +168,24 @@ class Kiwoom(QAxWidget):
                 #self.logging.logger.debug("종목코드: %s - 종목명: %s - 보유수량: %s - 매입가:%s - 수익률: %s - 현재가: %s" % ( code, code_nm, stock_quantity, buy_price, learn_rate, current_price))
 
                 if code in self.account_stock_dict:  # dictionary 에 해당 종목이 있나 확인
-
                     pass
-
                 else:
-
                     self.account_stock_dict[code] = {}
 
                 code_nm = code_nm.strip()
-
                 stock_quantity = int(stock_quantity.strip())
-
                 buy_price = int(buy_price.strip())
-
                 learn_rate = float(learn_rate.strip())
-
                 current_price = int(current_price.strip())
-
                 total_chegual_price = int(total_chegual_price.strip())
-
                 possible_quantity = int(possible_quantity.strip())
 
                 self.account_stock_dict[code].update({"종목명": code_nm})
-
                 self.account_stock_dict[code].update({"보유수량": stock_quantity})
-
                 self.account_stock_dict[code].update({"매입가": buy_price})
-
                 self.account_stock_dict[code].update({"수익률(%)": learn_rate})
-
                 self.account_stock_dict[code].update({"현재가": current_price})
-
                 self.account_stock_dict[code].update({"매입금액": total_chegual_price})
-
                 self.account_stock_dict[code].update({'매매가능수량': possible_quantity})
 
             #self.logging.logger.debug("sPreNext : %s" % sPrevNext)
@@ -211,19 +193,14 @@ class Kiwoom(QAxWidget):
             print("계좌에 가지고 있는 종목은 %s " % rows)
 
             if sPrevNext == "2":
-
                 self.detail_account_mystock(sPrevNext="2")
-
             else:
-
                 self.detail_account_info_event_loop.exit()
 
 
 
         elif sRQName == "실시간미체결요청":
-
             rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
-
             for i in range(rows):
 
                 code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "종목코드")
@@ -260,9 +237,79 @@ class Kiwoom(QAxWidget):
                 self.not_account_stock_dict[order_no].update({'주문구분': order_gubun})
                 self.not_account_stock_dict[order_no].update({'미체결수량': not_quantity})
                 self.not_account_stock_dict[order_no].update({'체결량': ok_quantity})
+
+                print("미체결 종목 : %s" % self.not_account_stock_dict[order_no])
                 #self.logging.logger.debug("미체결 종목 : %s " % self.not_account_stock_dict[order_no])
             self.detail_account_info_event_loop.exit()
 
+        elif sRQName ==  "주식일봉차트조회":
+
+            code = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, 0, "종목코드")
+            code = code.strip()
+            print("%s 일봉데이터 요청" % code)
+
+            rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
+            print(rows)
+
+            if sPrevNext == "2":
+                self.day_kiwoom_db(code=code, sPrevNext = sPrevNext)
+            else:
+                self.calculator_event_loop.exit()
 
 
 
+    def get_code_list_by_market(self, market_code): #시장에서 code를 받아 오기 위해
+        '''
+        종목 코드를 반환환
+       :param market_code:
+        :return:
+        [시장구분값]
+          0 : 장내
+          10 : 코스닥
+          3 : ELW
+          8 : ETF
+          50 : KONEX
+          4 :  뮤추얼펀드
+          5 : 신주인수권
+          6 : 리츠
+          9 : 하이얼펀드
+          30 : K-OTC
+        '''
+        code_list = self.dynamicCall("GetCodeListByMarket(QString)", market_code)
+        #print(code_list)
+        code_list = code_list.split(";")[:-1]
+
+        return code_list
+
+
+    def calculator_fnc(self):
+        '''
+        종목 분석용 함수
+        :return:
+        '''
+        code_list = self.get_code_list_by_market("10")
+        print("코스닥 갯수 %s" % len(code_list)) #1417
+
+        for idx, code in enumerate(code_list):
+
+            #스크린 번호를 한번이라도 요청하면 그룹이 만들어 진 것 ->그래서 끊어주는 건 개인의 선택
+            self.dynamicCall("DisconnectRealData(QString)",self.screen_calculation_stock)
+
+            print("%s / %s : KOSDAQ Stock Code : %s is updating..." %(idx +1, len(code_list),code))
+            self.day_kiwoom_db(code=code)
+
+    #일봉 가져오기
+    def day_kiwoom_db(self, code = None, date = None, sPrevNext = "0"):
+
+        QTest.qWait(3600) #3.6초 delay - 500~700
+        #프로세스의 동작을 멈추지 않고 요청되는 동작을 3.6초 지연
+        #기타 방법은 프로세스까지 멈추게 한다. 그러면 연길이 끊겨버림
+
+        self.dynamicCall("SetInputValue(QString, QString)", "종목코드", code)
+        self.dynamicCall("SetInputValue(QString, QString)", "수정주가구분", "1")
+
+        if date != None: #빈 값이 아닐 경우 기준 일자 입력
+            self.dynamicCall("SetInputValue(QString, QString)", "기준일자", date)
+
+        self.dynamicCall("CommRqData(QString, QString, int, QString)", "주식일봉차트조회", "opt10081", sPrevNext, self.screen_calculation_stock) # Tr서버로 전송 - Transaction
+        self.calculator_event_loop.exec()
