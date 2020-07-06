@@ -35,6 +35,11 @@ class Kiwoom(QAxWidget):
         ###########################
 
 
+        ###종목 분석 용
+        self.calcul_data= []
+        #########################
+
+
 
         #2일차
         self.get_ocx_instance()
@@ -189,7 +194,7 @@ class Kiwoom(QAxWidget):
                 self.account_stock_dict[code].update({'매매가능수량': possible_quantity})
 
             #self.logging.logger.debug("sPreNext : %s" % sPrevNext)
-
+                #print("계좌에 가지고 있는 종목은 %s " % learn_rate)
             print("계좌에 가지고 있는 종목은 %s " % rows)
 
             if sPrevNext == "2":
@@ -248,12 +253,59 @@ class Kiwoom(QAxWidget):
             code = code.strip()
             print("%s 일봉데이터 요청" % code)
 
-            rows = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
-            print(rows)
+            cnt = self.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRQName)
+            print("데이터 일수 $s", cnt)
+
+            #한번 조회하면 600일치까지 일봉데이터를 받을 수 있다.
+            for i in range(cnt): #[0...,599]
+                data = []
+
+                current_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "현재가")
+                value = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i,"거래량")
+                trading_value = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "거래대금")
+                data = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "일자")
+                start_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "시가")
+                high_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "고가")
+                low_price = self.dynamicCall("GetCommData(QString, QString, int, QString)", sTrCode, sRQName, i, "저가")
+
+                data.append("")
+                data.append(current_price.strip())
+                data.append(value.strip())
+                data.append(trading_value.strip())
+                data.append(data.strip())
+                data.append(start_price.strip())
+                data.append(high_price.strip())
+                data.append(low_price.strip())
+                data.append("")
+
+                self.calcul_data.append(data.copy())
+
+            #print(self.calcul_data)
+            #print(len(self.calcul_data))
+
 
             if sPrevNext == "2":
                 self.day_kiwoom_db(code=code, sPrevNext = sPrevNext)
             else:
+
+                print("총 일수 %s" %len(self.calcul_data))
+                # 120일 이평선을 그릴만큼의 데이터가 있는지 체크
+                pass_success = False
+                if self.calcul_data == None or len(self.calcul_data) < 120:
+                    pass_success = False
+                else:
+                    #120일 이상 되면
+                    pass_success = True
+
+                    total_price = 0
+                    for value in self.calcul_data[:120]: # 오늘부터 199일까지[오늘,하루전,이틀전,,,,,119일전]
+                        total_price += int(value[1]) #120의 종가를 다 더한다.
+
+                    moving_average_price = total_price/120
+
+                    if int(self.calcul_data[0][7]) <= moving_average_price and moving_average_price <= int(self.calcul_data[0][6]):
+                        print("오늘 주가 120이평선에 걸쳐있는 것 확인")
+
                 self.calculator_event_loop.exit()
 
 
