@@ -9,6 +9,6 @@ class UI_class: #클래스명 앞글자는 대문자로!
 
         self.app = QApplication(sys.argv) #초기화 시키는 용도
 
-        self.kiwoon = Kiwoom()
+        self.kiwoom = Kiwoom()
 
         self.app.exec_()
