@@ -1,4 +1,4 @@
-from kiwoom.kiwoom import *
+from pystock.kiwoom.kiwoom import *
 
 import sys #python system에 쓰는 라이브러리들
 from PyQt5.QtWidgets import *

@@ -2,11 +2,11 @@ import os
 import sys
 from PyQt5.QAxContainer import *
 from PyQt5.QtCore import *
-from config.errorCode import *
+from pystock.config.errorCode import *
 from PyQt5.QtTest import *
-from config.kiwoomType import *
-from config.log_class import *
-from config.slack import *
+from pystock.config.kiwoomType import *
+from pystock.config.log_class import *
+from pystock.config.slack import *
 
 
 class Kiwoom(QAxWidget):

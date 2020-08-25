@@ -1,4 +1,4 @@
-from ui.ui import *
+from pystock.ui.ui import *
 
 #import ui.ui as eee
 

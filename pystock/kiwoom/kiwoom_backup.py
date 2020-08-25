@@ -1,7 +1,7 @@
 import os
 from PyQt5.QAxContainer import *
 from PyQt5.QtCore import *
-from config.errorCode import *
+from pystock.config.errorCode import *
 from PyQt5.QtTest import *
 
 
