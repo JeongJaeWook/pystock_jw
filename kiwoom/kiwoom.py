@@ -610,7 +610,7 @@ class Kiwoom(QAxWidget):
             #jango_dict : 오늘 산 주식의 잔고
             #계좌잔고평가내역에 있고 오늘 산 잔고에는 없을 경우
             if sCode in self.account_stock_dict.keys() and sCode not in self.jango_dict.keys():
-                ##- 신규 매도를  한다.
+                ##신규 매도를 한다.
                 asd = self.account_stock_dict[sCode]
                 meme_rate = (b - asd['매입가']) / asd['매입가'] * 100
 
@@ -637,7 +637,7 @@ class Kiwoom(QAxWidget):
                     order_success = self.dynamicCall(
                         "SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)",
                         ["신규매도", self.portfolio_stock_dict[sCode]["주문용스크린번호"], self.account_num, 2, sCode, jd['주문가능수량'], 0, self.realType.SENDTYPE['거래구분']['시장가'], ""]
-                    )
+                    )#1초에 5회 이상 주문 불가능하다.
 
                     if order_success == 0:
                         self.logging.logger.debug("매도주문 전달 성공")
